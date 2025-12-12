@@ -15,7 +15,6 @@ dependencies:
   # Media & location
   audioplayers: ^5.0.0
   geolocator: ^12.0.0
-  google_maps_flutter: ^2.7.0
   image_picker: ^1.1.0
 
   # Optional Firebase (for security/login)

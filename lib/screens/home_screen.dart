@@ -57,7 +57,7 @@ class _HomeScreenState extends State<HomeScreen> {
       final position = await Geolocator.getCurrentPosition();
       setState(() => _position = position);
     } catch (_) {
-      // ignore and fall back to default ordering
+      // ignore
     } finally {
       setState(() => _locating = false);
     }
@@ -103,77 +103,69 @@ class _HomeScreenState extends State<HomeScreen> {
           NavigationDestination(icon: Icon(Icons.person_outline), label: 'Profile'),
         ],
       ),
-      body: Stack(
-        children: [
-          Positioned.fill(
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Colors.purple.withValues(alpha: 0.2),
-                    const Color(0xFF0F111A),
-                  ],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFFFDFEFF), Color(0xFFE3EAFF)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: RefreshIndicator(
+          onRefresh: _resolveLocation,
+          child: CustomScrollView(
+            physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+            slivers: [
+              SliverAppBar(
+                expandedHeight: 240,
+                pinned: true,
+                automaticallyImplyLeading: false,
+                title: const Text('Your Arena'),
+                backgroundColor: Colors.transparent,
+                flexibleSpace: FlexibleSpaceBar(
+                  background: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 72, 16, 16),
+                    child: _HeroPanel(
+                      locating: _locating,
+                      permissionDenied: _permissionDenied,
+                      onLocationTap: _resolveLocation,
+                      playersOnline: players,
+                      contestedZones: contested,
+                    ),
+                  ),
                 ),
               ),
-            ),
-          ),
-          RefreshIndicator(
-            onRefresh: _resolveLocation,
-            child: CustomScrollView(
-              physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-              slivers: [
-                SliverAppBar(
-                  expandedHeight: 220,
-                  pinned: true,
-                  automaticallyImplyLeading: false,
-                  title: const Text('Your Arena'),
-                  flexibleSpace: FlexibleSpaceBar(
-                    background: Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 72, 16, 16),
-                      child: _HeroPanel(
-                        locating: _locating,
-                        permissionDenied: _permissionDenied,
-                        onLocationTap: _resolveLocation,
-                        playersOnline: players,
-                        contestedZones: contested,
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  child: _QuickStats(
+                    contestedZones: contested,
+                    playersOnline: players,
+                    locating: _locating,
+                  ),
+                ),
+              ),
+              SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    final territory = _territories[index];
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      child: TerritoryCard(
+                        territory: territory,
+                        distanceMeters: _distanceFor(territory),
+                        onScout: () => Navigator.pushNamed(context, AppRoutes.map),
+                        onEngage: () => _openBattle(territory),
                       ),
-                    ),
-                  ),
+                    );
+                  },
+                  childCount: _territories.length,
                 ),
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    child: _QuickStats(
-                      contestedZones: contested,
-                      playersOnline: players,
-                      locating: _locating,
-                    ),
-                  ),
-                ),
-                SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      final territory = _territories[index];
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        child: TerritoryCard(
-                          territory: territory,
-                          distanceMeters: _distanceFor(territory),
-                          onScout: () => Navigator.pushNamed(context, AppRoutes.map),
-                          onEngage: () => _openBattle(territory),
-                        ),
-                      );
-                    },
-                    childCount: _territories.length,
-                  ),
-                ),
-                const SliverToBoxAdapter(child: SizedBox(height: 24)),
-              ],
-            ),
+              ),
+              const SliverToBoxAdapter(child: SizedBox(height: 32)),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -205,9 +197,9 @@ class _HeroPanel extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(32),
+        borderRadius: BorderRadius.circular(36),
         gradient: const LinearGradient(
-          colors: [Color(0xFF5F5BFF), Color(0xFF222E6B)],
+          colors: [Color(0xFF66D4FF), Color(0xFF7A74FF)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -217,46 +209,46 @@ class _HeroPanel extends StatelessWidget {
         children: [
           Text(
             'Live rival check-in',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.white70),
+            style: Theme.of(context)
+                .textTheme
+                .titleMedium
+                ?.copyWith(color: Colors.white.withValues(alpha: 0.85)),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           Text(
             statusText,
-            style: Theme.of(context).textTheme.headlineSmall,
+            style: Theme.of(context)
+                .textTheme
+                .headlineSmall
+                ?.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 16),
+          Container(
+            height: 7,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Row(
+                children: List.generate(
+                  12,
+                  (index) => Expanded(
+                    child: Container(
+                      color: index.isEven ? Colors.black26 : Colors.yellow.shade400,
+                    ),
+                  ),
+                ),
+              ),
+            ),
           ),
           const SizedBox(height: 24),
           Row(
             children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('Players nearby', style: TextStyle(color: Colors.white70)),
-                    Text(
-                      '$playersOnline',
-                      style: Theme.of(context)
-                          .textTheme
-                          .displaySmall
-                          ?.copyWith(fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('Contested zones', style: TextStyle(color: Colors.white70)),
-                    Text(
-                      '$contestedZones',
-                      style: Theme.of(context)
-                          .textTheme
-                          .displaySmall
-                          ?.copyWith(fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),
-              ),
+              Expanded(child: _HeroMetric(label: 'Players nearby', value: '$playersOnline')),
+              const SizedBox(width: 12),
+              Expanded(child: _HeroMetric(label: 'Zones contested', value: '$contestedZones')),
             ],
           ),
           const Spacer(),
@@ -264,10 +256,41 @@ class _HeroPanel extends StatelessWidget {
             onPressed: onLocationTap,
             style: FilledButton.styleFrom(
               backgroundColor: Colors.white,
-              foregroundColor: const Color(0xFF1D2147),
+              foregroundColor: const Color(0xFF4B4AEA),
+              minimumSize: const Size.fromHeight(48),
             ),
-            icon: Icon(locating ? Icons.radar : Icons.my_location),
+            icon: Icon(locating ? Icons.downloading : Icons.my_location),
             label: Text(locating ? 'Re-scanning' : 'Rescan location'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _HeroMetric extends StatelessWidget {
+  final String label;
+  final String value;
+  const _HeroMetric({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(22),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: const TextStyle(color: Colors.white70)),
+          Text(
+            value,
+            style: Theme.of(context)
+                .textTheme
+                .headlineSmall
+                ?.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
           ),
         ],
       ),
@@ -288,87 +311,88 @@ class _QuickStats extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tiles = [
+      _StatTileData(
+        icon: Icons.flash_on,
+        title: 'Quick match',
+        subtitle: locating ? 'Calibrating...' : 'Closest battle auto-join.',
+        onTap: () => Navigator.pushNamed(
+          context,
+          AppRoutes.battle,
+          arguments: TerritoryRepository.instance.territories.first,
+        ),
+      ),
+      _StatTileData(
+        icon: Icons.shield_moon,
+        title: '$contestedZones contested',
+        subtitle: 'Hold the line or reclaim it tonight.',
+      ),
+      _StatTileData(
+        icon: Icons.people_alt,
+        title: '$playersOnline rivals',
+        subtitle: 'Locals currently online.',
+      ),
+    ];
+
     return SizedBox(
       height: 130,
-      child: ListView(
+      child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        children: [
-          SizedBox(
-            width: 220,
-            child: _StatCard(
-              icon: Icons.flash_on,
-              title: 'Quick match',
-              subtitle: locating ? 'Calibrating...' : 'Closest battle auto-join.',
-              onTap: () => Navigator.pushNamed(
-                context,
-                AppRoutes.battle,
-                arguments: TerritoryRepository.instance.territories.first,
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          SizedBox(
-            width: 220,
-            child: _StatCard(
-              icon: Icons.shield_moon,
-              title: '$contestedZones contested',
-              subtitle: 'Hold the line or reclaim it tonight.',
-            ),
-          ),
-          const SizedBox(width: 12),
-          SizedBox(
-            width: 220,
-            child: _StatCard(
-              icon: Icons.people_alt,
-              title: '$playersOnline rivals',
-              subtitle: 'Locals online in your radius.',
-            ),
-          ),
-        ],
+        itemBuilder: (context, index) {
+          final tile = tiles[index];
+          return SizedBox(width: 220, child: _StatCard(data: tile));
+        },
+        separatorBuilder: (_, __) => const SizedBox(width: 12),
+        itemCount: tiles.length,
       ),
     );
   }
 }
 
-class _StatCard extends StatelessWidget {
+class _StatTileData {
   final IconData icon;
   final String title;
   final String subtitle;
   final VoidCallback? onTap;
 
-  const _StatCard({
+  _StatTileData({
     required this.icon,
     required this.title,
     required this.subtitle,
     this.onTap,
   });
+}
+
+class _StatCard extends StatelessWidget {
+  final _StatTileData data;
+  const _StatCard({required this.data});
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(24),
-          color: Colors.white.withValues(alpha: 0.04),
-          border: Border.all(color: Colors.white10),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(icon, color: Colors.white70),
-            const SizedBox(height: 12),
-            Text(
-              title,
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              subtitle,
-              style: const TextStyle(color: Colors.white70, fontSize: 12),
-            ),
-          ],
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(28),
+      child: InkWell(
+        onTap: data.onTap,
+        borderRadius: BorderRadius.circular(28),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(data.icon, color: const Color(0xFF6C5CE7)),
+              const SizedBox(height: 12),
+              Text(
+                data.title,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                data.subtitle,
+                style: const TextStyle(color: Color(0xFF6B6B7A), fontSize: 12),
+              ),
+            ],
+          ),
         ),
       ),
     );

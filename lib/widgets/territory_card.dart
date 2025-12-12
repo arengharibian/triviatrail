@@ -27,11 +27,17 @@ class TerritoryCard extends StatelessWidget {
     final controlPercent = (territory.control * 100).toStringAsFixed(0);
 
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(28),
-        color: Colors.white.withValues(alpha: 0.05),
-        border: Border.all(color: Colors.white12),
+        borderRadius: BorderRadius.circular(30),
+        color: Colors.white,
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x1F000000),
+            blurRadius: 20,
+            offset: Offset(0, 12),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -60,7 +66,7 @@ class TerritoryCard extends StatelessWidget {
                     ),
                     Text(
                       '${territory.landmark} • $distanceLabel',
-                      style: const TextStyle(color: Colors.white70),
+                      style: const TextStyle(color: Color(0xFF6A6A7B)),
                     ),
                   ],
                 ),
@@ -68,7 +74,7 @@ class TerritoryCard extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  const Text('Control', style: TextStyle(color: Colors.white70)),
+                  const Text('Control', style: TextStyle(color: Color(0xFF7A7A8C))),
                   Text(
                     '$controlPercent%',
                     style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
@@ -83,7 +89,7 @@ class TerritoryCard extends StatelessWidget {
             child: LinearProgressIndicator(
               value: territory.control,
               minHeight: 10,
-              backgroundColor: Colors.white12,
+              backgroundColor: const Color(0xFFE8E8F4),
               valueColor: AlwaysStoppedAnimation<Color>(territory.accent),
             ),
           ),
@@ -93,7 +99,7 @@ class TerritoryCard extends StatelessWidget {
             children: territory.hotCategories
                 .map(
                   (tag) => Chip(
-                        backgroundColor: Colors.white.withValues(alpha: 0.1),
+                        backgroundColor: const Color(0xFFF0F3FF),
                         label: Text(tag),
                       ),
                 )
@@ -102,7 +108,7 @@ class TerritoryCard extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             '${territory.challengers} rivals active • radius ${territory.radiusMeters}m',
-            style: const TextStyle(color: Colors.white70),
+            style: const TextStyle(color: Color(0xFF6A6A7B)),
           ),
           const SizedBox(height: 16),
           Row(
@@ -111,8 +117,8 @@ class TerritoryCard extends StatelessWidget {
                 child: OutlinedButton.icon(
                   onPressed: onScout,
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.white,
-                    side: const BorderSide(color: Colors.white24),
+                    foregroundColor: const Color(0xFF4B4AEA),
+                    side: const BorderSide(color: Color(0xFFD6DAF0)),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                   ),
                   icon: const Icon(Icons.map_outlined),
@@ -125,6 +131,7 @@ class TerritoryCard extends StatelessWidget {
                   onPressed: onEngage,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: territory.accent,
+                    foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                     minimumSize: const Size.fromHeight(48),
                   ),

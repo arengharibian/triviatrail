@@ -3,9 +3,9 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 
-import '../data/api_service.dart';
 import '../data/models.dart';
 import '../data/territory_repository.dart';
+import '../data/location_trivia_service.dart';
 
 enum MatchPhase { scanning, battle, complete }
 
@@ -19,7 +19,7 @@ class TerritoryBattleScreen extends StatefulWidget {
 
 class _TerritoryBattleScreenState extends State<TerritoryBattleScreen> {
   final _repo = TerritoryRepository.instance;
-  final _api = TriviaApiService();
+  final _trivia = LocationTriviaService();
 
   List<Question> _questions = [];
   int _currentIndex = 0;
@@ -27,6 +27,7 @@ class _TerritoryBattleScreenState extends State<TerritoryBattleScreen> {
   int _rivalScore = 0;
   double _controlDelta = 0;
   double? _distance;
+  Position? _playerPosition;
   bool _loading = true;
   MatchPhase _phase = MatchPhase.scanning;
 
@@ -43,7 +44,11 @@ class _TerritoryBattleScreenState extends State<TerritoryBattleScreen> {
 
   Future<void> _bootstrap() async {
     await _resolveLocation();
-    final questions = await _api.fetchBonusQuestions(widget.territory.id);
+    final questions = await _trivia.generateQuestionsFor(
+      widget.territory,
+      position: _playerPosition,
+      distanceMeters: _distance,
+    );
     if (!mounted) return;
     setState(() {
       _questions = questions;
@@ -71,7 +76,10 @@ class _TerritoryBattleScreenState extends State<TerritoryBattleScreen> {
         widget.territory.latitude,
         widget.territory.longitude,
       );
-      setState(() => _distance = distance);
+      setState(() {
+        _playerPosition = position;
+        _distance = distance;
+      });
     } catch (_) {
       // Ignore errors, we can still play remotely.
     }

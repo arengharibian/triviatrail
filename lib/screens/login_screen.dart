@@ -82,202 +82,169 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
-        children: [
-          Positioned.fill(
-            child: Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Color(0xFF090B13), Color(0xFF161C3A)],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Color(0xFF4CB1FF),
+              Color(0xFF5F68FF),
+              Color(0xFFFA8FFF),
+            ],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'TriviaTrail',
+                  style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
                 ),
-              ),
+                const SizedBox(height: 12),
+                Text(
+                  'Drop into the local trivia arena and race neighbors for territory.',
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleMedium
+                      ?.copyWith(color: Colors.white.withValues(alpha: 0.9)),
+                ),
+                const SizedBox(height: 24),
+                _buildSocialButtons(),
+                const SizedBox(height: 24),
+                _buildFormCard(context),
+              ],
             ),
           ),
-          Positioned(
-            top: -60,
-            right: -40,
-            child: Container(
-              width: 240,
-              height: 240,
-              decoration: const BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [Color(0xFF5F5BFF), Colors.transparent],
-                ),
-              ),
-            ),
-          ),
-          SafeArea(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'TriviaTrail',
-                    style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                  ),
-                  Text(
-                    'Claim the blocks around you with live trivia battles.',
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodyLarge
-                        ?.copyWith(color: Colors.white70),
-                  ),
-                  const SizedBox(height: 32),
-                  _buildMissionCard(),
-                  const SizedBox(height: 24),
-                  _buildForm(),
-                ],
-              ),
-            ),
-          )
-        ],
+        ),
       ),
     );
   }
 
-  Widget _buildMissionCard() {
-    final tags = ['Downtown', 'Campus', 'Food Row', 'Arts District', 'Harbor'];
+  Widget _buildSocialButtons() {
+    const socials = [
+      (Icons.apple, 'Continue with Apple'),
+      (Icons.g_mobiledata, 'Continue with Google'),
+      (Icons.facebook, 'Continue with Facebook'),
+    ];
+
+    return Column(
+      children: socials
+          .map(
+            (s) => Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white.withValues(alpha: 0.25),
+                  foregroundColor: Colors.white,
+                  minimumSize: const Size.fromHeight(52),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+                onPressed: () {},
+                icon: Icon(s.$1),
+                label: Text(s.$2),
+              ),
+            ),
+          )
+          .toList(),
+    );
+  }
+
+  Widget _buildFormCard(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(28),
-        color: Colors.white.withValues(alpha: 0.08),
-        border: Border.all(color: Colors.white12),
+        borderRadius: BorderRadius.circular(32),
+        color: Colors.white,
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x33000000),
+            blurRadius: 24,
+            offset: Offset(0, 12),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Tonight’s Trail',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 8),
           Text(
-            _status,
-            style: const TextStyle(color: Colors.white70),
+            'Link your call sign',
+            style: Theme.of(context)
+                .textTheme
+                .titleLarge
+                ?.copyWith(fontWeight: FontWeight.bold),
           ),
-          const SizedBox(height: 12),
-          Wrap(
-            spacing: 8,
-            children: tags
-                .map(
-                  (tag) => Chip(
-                    backgroundColor: Colors.white.withValues(alpha: 0.1),
-                    label: Text(tag),
-                  ),
-                )
-                .toList(),
+          const SizedBox(height: 4),
+          Text(_status, style: const TextStyle(color: Color(0xFF63637A))),
+          const SizedBox(height: 20),
+          TextField(
+            controller: _aliasController,
+            decoration: const InputDecoration(
+              labelText: 'Call sign',
+              helperText: 'Displayed to nearby rivals.',
+            ),
           ),
           const SizedBox(height: 16),
-          FilledButton.icon(
-            onPressed: _requestingLocation ? null : _requestLocation,
-            style: FilledButton.styleFrom(
-              backgroundColor:
-                  _locationGranted ? Colors.greenAccent.shade400 : null,
+          TextField(
+            controller: _emailController,
+            keyboardType: TextInputType.emailAddress,
+            decoration: const InputDecoration(
+              labelText: 'Contact (email or phone)',
             ),
-            icon: Icon(
-              _locationGranted ? Icons.check_circle : Icons.my_location,
-            ),
-            label: Text(_locationGranted ? 'Location locked in' : 'Use my location'),
-          )
-        ],
-      ),
-    );
-  }
-
-  Widget _buildForm() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        TextField(
-          controller: _aliasController,
-          decoration: const InputDecoration(
-            labelText: 'Call sign',
-            helperText: 'What other locals will see.',
           ),
-        ),
-        const SizedBox(height: 16),
-        TextField(
-          controller: _emailController,
-          keyboardType: TextInputType.emailAddress,
-          decoration: const InputDecoration(
-            labelText: 'Contact (email or phone)',
-          ),
-        ),
-        const SizedBox(height: 16),
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(24),
-            color: Colors.white.withValues(alpha: 0.06),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          const SizedBox(height: 16),
+          Row(
             children: [
-              const Text(
-                'Play style',
-                style: TextStyle(fontWeight: FontWeight.bold),
+              Icon(
+                _locationGranted ? Icons.check_circle : Icons.location_searching,
+                color: _locationGranted ? Colors.green : Colors.deepPurple,
               ),
-              const SizedBox(height: 12),
-              Wrap(
-                spacing: 8,
-                children: const [
-                  _ModeChip(label: 'Explorer'),
-                  _ModeChip(label: 'Strategist'),
-                  _ModeChip(label: 'Speed Runner'),
-                ],
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  _locationGranted
+                      ? 'Location locked • ready to deploy'
+                      : 'Allow GPS so we can anchor trivia around you.',
+                ),
+              ),
+              const SizedBox(width: 8),
+              FilledButton(
+                onPressed: _requestingLocation ? null : _requestLocation,
+                style: FilledButton.styleFrom(
+                  backgroundColor:
+                      _locationGranted ? const Color(0xFF21C57A) : const Color(0xFF5F5BFF),
+                ),
+                child: Text(_locationGranted ? 'Good to go' : 'Share GPS'),
               ),
             ],
           ),
-        ),
-        const SizedBox(height: 28),
-        SizedBox(
-          width: double.infinity,
-          child: ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 18),
-              backgroundColor: const Color(0xFF5F5BFF),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(18),
+          const SizedBox(height: 24),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: _enterArena,
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size.fromHeight(56),
+                backgroundColor: const Color(0xFF2326FF),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+              ),
+              child: const Text(
+                'Launch Arena',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
             ),
-            onPressed: _enterArena,
-            child: const Text(
-              'Enter Local Arena',
-              style: TextStyle(fontSize: 18),
-            ),
           ),
-        ),
-      ],
-    );
-  }
-}
-
-class _ModeChip extends StatefulWidget {
-  final String label;
-  const _ModeChip({required this.label});
-
-  @override
-  State<_ModeChip> createState() => _ModeChipState();
-}
-
-class _ModeChipState extends State<_ModeChip> {
-  bool _selected = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return FilterChip(
-      label: Text(widget.label),
-      selected: _selected,
-      onSelected: (value) => setState(() => _selected = value),
-      selectedColor: Colors.white.withValues(alpha: 0.2),
-      checkmarkColor: Colors.white,
+        ],
+      ),
     );
   }
 }
